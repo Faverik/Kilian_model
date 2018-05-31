@@ -27,7 +27,8 @@ pix_in_mkm = 1.826  # real pixel area on the photo
 max_s = 25000  # maximum particle area in mkm**2
 step = 10000  # smooth graphics
 colon_space = 10000  # space between columns on hist
-data_file = "C:\\Users\\nefae\\PycharmProjects\\Kilian_model\\data.txt"
+path = "C:\\Users\\nefae\\PycharmProjects\\Kilian_model\\"
+data_file = "{0}data.txt".format(path)
 
 # Constants
 YB1 = 0  # distribution zero-point (common 0)
@@ -37,12 +38,13 @@ K = 2  # mean 2D (photo dimension)
 # Declaration
 cells = []
 plot_y = []
+text_p = ""
 # Input data
 f = open(data_file, "r")
 for line in f.readlines():  # file reading in cells variable
     if line != "'\n'":
         cells.append(float(line[0:-1]))
-
+f.close()
 # Data preparation
 number, area, dump = plt.hist(cells, freq_count, color="Gray")  # histogram calculation function
 norm_number = number / sum(number)  # normalization
@@ -108,5 +110,25 @@ if ensemble > 1:
 color_t = ['k', 'r', 'b', 'y', 'g', 'm', 'c']
 
 for t in range(len(plot_y)):
-    plt.plot(plot_x, plot_y[t], color=color_t[t])
+    plt.plot(plot_x, plot_y[t], color=color_t[t], label='{0}-ensemble'.format(t))
+plt.legend(loc='upper right')
+plt.xlabel(u'${\mu}m$²', fontsize=14)
+plt.ylabel('share')
+x_pos = max(plot_x) - (max(plot_x)/5)
+y_pos = max(plot_y[0]) - 0.1
+l = 1
+for q in range(0, ensemble+1, 2):
+    text_p += 'a{0}=1*10^{1} \nu{2}=1*10^{3} \n'.format(l, np.round(popt[q], 2), l, np.round(popt[q+1], 2))
+    l += 1
+
+plt.text(x_pos, y_pos, text_p)
 plt.show()
+
+l = 1
+res_file = "{0}result.txt".format(path)
+f = open(res_file, 'w')
+for i in range(0, ensemble+1, 2):
+    f.write("a{0}={1}\n".format(l, 1*10**popt[i]))
+    f.write("u{0}={1}\n".format(l, 1*10**popt[i+1]))
+    l += 1
+f.close()
